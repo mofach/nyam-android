@@ -1,20 +1,33 @@
 package com.project.nyam.presentation.auth
 
 import android.content.Context
-import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider // <--- SUDAH DITAMBAHKAN
+import com.google.firebase.auth.GoogleAuthProvider
+import com.project.nyam.data.SessionManager
 import com.project.nyam.data.model.LoginRequest
 import com.project.nyam.data.remote.ApiClient
-import kotlinx.coroutines.tasks.await // <--- BUTUH LIBRARY DI LANGKAH 1
 import com.project.nyam.data.model.UserData
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class AuthManager(private val context: Context) {
     private val auth = FirebaseAuth.getInstance()
+    private val sessionManager = SessionManager(context)
 
-    // Ganti xxxxx dengan Web Client ID dari google-services.json kamu (Client Type 3)
+    // Scope untuk menjalankan coroutine di fungsi non-suspend
+    private val scope = MainScope()
+
+    suspend fun getIdToken(): String? {
+        return try {
+            auth.currentUser?.getIdToken(true)?.await()?.token
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     private val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken("956299547913-t8cicol323thaaugdpchc46ni4nb88he.apps.googleusercontent.com")
         .requestEmail()
@@ -22,10 +35,14 @@ class AuthManager(private val context: Context) {
 
     val googleSignInClient = GoogleSignIn.getClient(context, gso)
 
+    // REVISI: Menggunakan scope.launch untuk memanggil clearSession()
     fun signOutGoogle(onComplete: () -> Unit) {
         googleSignInClient.signOut().addOnCompleteListener {
             auth.signOut()
-            onComplete()
+            scope.launch {
+                sessionManager.clearSession()
+                onComplete()
+            }
         }
     }
 
@@ -37,7 +54,18 @@ class AuthManager(private val context: Context) {
 
             if (firebaseIdToken != null) {
                 val response = ApiClient.instance.loginWithGoogle(LoginRequest(firebaseIdToken))
-                if (response.isSuccessful) response.body()?.data else null
+                if (response.isSuccessful) {
+                    val userData = response.body()?.data
+                    userData?.let {
+                        sessionManager.saveSession(
+                            uid = it.uid,
+                            name = it.name,
+                            isDone = it.isOnboardingCompleted,
+                            needs = it.nutritionalNeeds
+                        )
+                    }
+                    userData
+                } else null
             } else null
         } catch (e: Exception) { null }
     }
@@ -48,7 +76,18 @@ class AuthManager(private val context: Context) {
             val token = result.user?.getIdToken(true)?.await()?.token
             if (token != null) {
                 val response = ApiClient.instance.loginWithGoogle(LoginRequest(token))
-                if (response.isSuccessful) response.body()?.data else null
+                if (response.isSuccessful) {
+                    val userData = response.body()?.data
+                    userData?.let {
+                        sessionManager.saveSession(
+                            uid = it.uid,
+                            name = it.name,
+                            isDone = it.isOnboardingCompleted,
+                            needs = it.nutritionalNeeds
+                        )
+                    }
+                    userData
+                } else null
             } else null
         } catch (e: Exception) { null }
     }

@@ -1,68 +1,118 @@
 package com.project.nyam.data.model
 
 import com.google.gson.annotations.SerializedName
+import androidx.compose.ui.graphics.vector.ImageVector
 
-// 1. Yang kita KIRIM ke Backend (Request Body)
+// --- REQUEST MODELS ---
 data class LoginRequest(
-    @SerializedName("idToken")
-    val idToken: String
+    @SerializedName("idToken") val idToken: String
 )
 
-// 2. Yang kita TERIMA dari Backend (Response)
-data class AuthResponse(
-    @SerializedName("status")
-    val status: String,
-
-    @SerializedName("message")
-    val message: String,
-
-    @SerializedName("data")
-    val data: UserData? // Bisa null kalau error
-)
-
-// 3. Detail Data User
-data class UserData(
-    @SerializedName("uid")
-    val uid: String,
-
-    @SerializedName("email")
-    val email: String,
-
-    @SerializedName("name")
-    val name: String?,
-
-    @SerializedName("photoUrl")
-    val photoUrl: String?,
-
-    @SerializedName("isOnboardingCompleted")
-    val isOnboardingCompleted: Boolean // <--- INI KUNCI NAVIGASI KITA
-)
-
-// Request untuk PUT /api/users/{uid}/profile
 data class PhysicalDataRequest(
     val name: String,
-    val birthdate: String, // YYYY-MM-DD
-    val gender: Int,       // 0: Male, 1: Female
+    val birthdate: String,
+    val gender: Int,
     val height: Int,
     val weight: Int,
     val activityLevel: Double,
     val allergies: List<String>
 )
 
-// Response setelah simpan data fisik
+// --- RESPONSE MODELS ---
+data class AuthResponse(
+    val status: String,
+    val message: String,
+    val data: UserData?
+)
+
+data class UserData(
+    val uid: String,
+    val email: String,
+    val name: String?,
+    val photoUrl: String?,
+    val isOnboardingCompleted: Boolean,
+    val healthStats: HealthStats? = null,
+    val nutritionalNeeds: NutritionalNeeds? = null
+)
+
 data class PhysicalDataResponse(
     val status: String,
     val message: String,
-    val data: PhysicalDataDetail?
+    @SerializedName("data")
+    val data: FullUserProfile?
 )
 
-data class PhysicalDataDetail(
-    val healthStats: HealthStats
+data class FullUserProfile(
+    val uid: String,
+    val name: String,
+    val email: String,
+    val photoUrl: String?,
+    val birthdate: String?,
+    val isOnboardingCompleted: Boolean,
+    val healthStats: HealthStats,
+    val nutritionalNeeds: NutritionalNeeds,
+    val physicalData: PhysicalDetail,
+    val preferences: PreferencesDetail
 )
 
 data class HealthStats(
     val bmi: Double,
     val bmiStatus: String,
     val bmr: Int,
-    val tdee: Int
+    val tdee: Int,
+    val bmrScore: Int,
+    val bmrLabel: String
+)
+
+data class PreferencesDetail(
+    val allergies: List<String>
+)
+
+data class NutritionalNeeds(
+    val calories: Int,
+    val carbs: Int,
+    val protein: Int,
+    val fat: Int
+)
+
+data class PhysicalDetail(
+    val gender: Int,
+    val age: Int,
+    val height: Int,
+    val weight: Int,
+    val activityLevel: Double
+)
+
+// --- HISTORY MODELS ---
+data class HistoryResponse(
+    val status: String,
+    val data: HistoryData?
+)
+
+data class HistoryData(
+    val summary: NutritionSummary?,
+    val target: NutritionalNeeds?,
+    val meals: List<Meal>?
+)
+
+data class NutritionSummary(
+    val totalCalories: Int,
+    val totalCarbs: Int,
+    val totalProtein: Int,
+    val totalFat: Int
+)
+
+data class Meal(
+    val foodName: String,
+    val calories: Int,
+    val carbs: Int,
+    val protein: Int,
+    val fat: Int,
+    val imageUrl: String?
+)
+
+data class BottomNavItem(
+    val title: String,
+    val route: String,
+    val icon: ImageVector
 )
