@@ -16,13 +16,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.nyam.data.model.NutritionSummary
 import com.project.nyam.data.model.NutritionalNeeds
+import com.project.nyam.data.model.MealRequest
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.text.style.TextAlign
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.foundation.layout.Arrangement
+import com.project.nyam.data.model.Recipe
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.RestaurantMenu
+
 
 @Composable
 fun NutritionRing(label: String, current: Int, target: Int, color: Color, onClick: () -> Unit) {
@@ -62,7 +74,6 @@ fun NutritionRing(label: String, current: Int, target: Int, color: Color, onClic
         Spacer(modifier = Modifier.height(10.dp))
         Text(label, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
 
-        // REVISI: Tetap tampilkan angka gram meskipun berlebih
         Text(
             text = "$current / ${target}g",
             fontSize = 11.sp,
@@ -98,7 +109,6 @@ fun CalorieMasterBox(summary: NutritionSummary, target: NutritionalNeeds, onClic
             }
         }
 
-        // REVISI 2: Badge Warning di pojok kanan atas Box
         if (progress > 1f) {
             Surface(
                 modifier = Modifier.size(32.dp).offset(x = 8.dp, y = (-8).dp),
@@ -163,7 +173,7 @@ fun InfoSection(title: String, body: String) {
     Column(Modifier.fillMaxWidth().padding(bottom = 20.dp)) {
         Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.DarkGray)
         Spacer(Modifier.height(8.dp))
-        Text(body, fontSize = 14.sp, color = Color.Gray, textAlign = TextAlign.Justify, lineHeight = 20.sp)
+        Text(body, fontSize = 14.sp, color = Color.Gray, lineHeight = 20.sp)
     }
 }
 
@@ -192,33 +202,273 @@ fun SegmentedProgressBar(summary: NutritionSummary, target: NutritionalNeeds, cC
     }
 }
 
+// --- NEW REVISED COMPONENTS FOR HEALTH METRICS ---
+
 @Composable
-fun BmrScoreView(score: Int) {
-    val colors = listOf(Color(0xFF2196F3), Color(0xFF00BCD4), Color(0xFF4CAF50), Color(0xFFFBC02D), Color(0xFFF57C00), Color(0xFFD32F2F))
-    val currentColor = colors.getOrElse(score) { Color.Gray }
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(Icons.Default.Speed, null, tint = currentColor, modifier = Modifier.size(40.dp))
-        Text("BMR Score", fontSize = 10.sp, color = Color.Gray)
-        Text("$score", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = currentColor)
+fun MetricHeaderItem(icon: ImageVector, label: String, value: String, tint: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, null, modifier = Modifier.size(20.dp), tint = tint)
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            Text(label, fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+            Text(value, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
 @Composable
-fun BmiLegendView() {
-    val labels = listOf("Extremely Weak", "Weak", "Normal", "Overweight", "Obesity", "Extreme Obesity")
-    val colors = listOf(Color(0xFF2196F3), Color(0xFF00BCD4), Color(0xFF4CAF50), Color(0xFFFBC02D), Color(0xFFF57C00), Color(0xFFD32F2F))
-    Column(Modifier.padding(top = 12.dp)) {
-        labels.chunked(2).forEach { row ->
-            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                row.forEach { label ->
-                    val idx = labels.indexOf(label)
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f).padding(vertical = 4.dp)) {
-                        Box(Modifier.size(12.dp).clip(CircleShape).background(colors[idx]))
-                        Spacer(Modifier.width(8.dp))
-                        Text(label, fontSize = 11.sp, color = Color.DarkGray, fontWeight = FontWeight.Medium)
-                    }
+fun CompactMetricTile(label: String, value: String, icon: ImageVector) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFF8F8F8), RoundedCornerShape(12.dp))
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, modifier = Modifier.size(16.dp), tint = Color.Gray)
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            Text(label, fontSize = 10.sp, color = Color.Gray)
+            Text(value, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun BmrScoreBadge(score: Int, label: String) {
+    val colors = listOf(
+        Color(0xFF2196F3), // 0: Extremely Weak
+        Color(0xFF00BCD4), // 1: Weak
+        Color(0xFF4CAF50), // 2: Normal
+        Color(0xFFFBC02D), // 3: Overweight
+        Color(0xFFF57C00), // 4: Obesity
+        Color(0xFFD32F2F)  // 5: Extreme Obesity
+    )
+    val color = colors.getOrElse(score) { Color.Gray }
+
+    Surface(color = color, shape = RoundedCornerShape(20.dp)) {
+        Text(
+            text = "Score $score: $label",
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            color = Color.White,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+// Tambahkan ini di DashboardComponents.kt
+@Composable
+fun AllergyChip(text: String, modifier: Modifier = Modifier, isNone: Boolean = false) {
+    Surface(
+        modifier = modifier,
+        color = if (isNone) Color(0xFFE8F5E9) else Color(0xFFFFEBEE),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, if (isNone) Color(0xFF4CAF50).copy(0.2f) else Color.Red.copy(0.1f))
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = if (isNone) Icons.Default.CheckCircle else Icons.Default.Warning,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = if (isNone) Color(0xFF4CAF50) else Color.Red
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = text,
+                color = if (isNone) Color(0xFF4CAF50) else Color.Red,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun SmallMacroBadge(text: String, color: Color) {
+    Surface(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)) {
+        Text(text, color = color, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+    }
+}
+
+@Composable
+fun RecommendationItem(recipe: Recipe, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.width(260.dp).padding(end = 16.dp).clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column {
+            AsyncImage(
+                model = recipe.image,
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth().height(130.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column(modifier = Modifier.padding(12.dp)) {
+                // Cuisine tag kecil
+                Text(
+                    text = recipe.cuisineType?.firstOrNull()?.uppercase() ?: "RECIPE",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4CAF50)
+                )
+                Text(recipe.label, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 15.sp)
+
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+                    Icon(Icons.Default.Timer, null, modifier = Modifier.size(12.dp), tint = Color.Gray)
+                    Text(" ${recipe.time} min", fontSize = 11.sp, color = Color.Gray)
+                    Spacer(Modifier.width(8.dp))
+                    Icon(Icons.Default.Scale, null, modifier = Modifier.size(12.dp), tint = Color.Gray)
+                    Text(" ${recipe.totalWeight.toInt()}g", fontSize = 11.sp, color = Color.Gray)
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecipeDetailSheet(recipe: Recipe,
+                      onCookMeal: (MealRequest) -> Unit,
+                      onDismiss: () -> Unit) {
+    val context = LocalContext.current // Untuk buka URL
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Color.White
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Gambar dengan Chip cuisine di atasnya
+            Box {
+                AsyncImage(
+                    model = recipe.image,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(16.dp)),
+                    contentScale = ContentScale.Crop
+                )
+                // Cuisine Type Badge
+                recipe.cuisineType?.firstOrNull()?.let { cuisine ->
+                    Surface(
+                        modifier = Modifier.padding(12.dp).align(Alignment.TopStart),
+                        color = Color.Black.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            cuisine.uppercase(),
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            Text(text = recipe.label, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+
+            // Info Bar
+            Row(
+                Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SmallMacroBadge("${recipe.calories} kkal", Color(0xFF4CAF50))
+                SmallMacroBadge("${recipe.time} Min", Color.Gray)
+                SmallMacroBadge("${recipe.totalWeight.toInt()}g", Color.Blue.copy(0.6f))
+            }
+
+            // Meal Type Info
+            Text(
+                text = "Perfect for ${recipe.mealType?.joinToString() ?: "anytime"}",
+                fontSize = 12.sp,
+                color = Color.Gray,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+            )
+
+            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(thickness = 0.5.dp)
+            Spacer(Modifier.height(16.dp))
+
+            Text(text = "Ingredients", fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Spacer(Modifier.height(8.dp))
+            recipe.ingredients?.forEach { item ->
+                Row(Modifier.padding(vertical = 4.dp)) {
+                    Text(text = "•", modifier = Modifier.padding(end = 8.dp), color = Color(0xFF4CAF50))
+                    Text(text = item, fontSize = 14.sp, color = Color.Gray)
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // Nutrition Section
+            Text(text = "Nutritional Info", fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                NutrientDetail("Carbs", "${recipe.nutrients.carbs}g", Color(0xFFFFA726))
+                NutrientDetail("Protein", "${recipe.nutrients.protein}g", Color(0xFF42A5F5))
+                NutrientDetail("Fat", "${recipe.nutrients.fat}g", Color(0xFFEF5350))
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            // ACTION BUTTON: Buka Browser
+            Button(
+                onClick = {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(recipe.sourceUrl))
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+            ) {
+                Icon(Icons.Default.OpenInNew, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Lihat Instruksi Memasak", fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(12.dp))
+            // TOMBOL BARU: MASAK & MAKAN
+            OutlinedButton(
+                onClick = {
+                    val mealReq = MealRequest(
+                        foodName = recipe.label,
+                        calories = recipe.calories,
+                        carbs = recipe.nutrients.carbs,
+                        protein = recipe.nutrients.protein,
+                        fat = recipe.nutrients.fat,
+                        imageUrl = recipe.image
+                    )
+                    onCookMeal(mealReq)
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, Color(0xFF4CAF50)),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF4CAF50))
+            ) {
+                Icon(Icons.Default.RestaurantMenu, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Masak & Makan Sekarang", fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(Modifier.height(40.dp))
+        }
+    }
+}
+
+@Composable
+fun NutrientDetail(label: String, value: String, color: Color) {
+    Column {
+        Text(text = label, fontSize = 12.sp, color = Color.Gray)
+        Text(text = value, fontWeight = FontWeight.Bold, color = color)
     }
 }

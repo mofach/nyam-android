@@ -116,3 +116,42 @@ data class BottomNavItem(
     val route: String,
     val icon: ImageVector
 )
+
+// Tambahkan di data/model/AuthModels.kt
+data class RecommendationResponse(
+    val status: String,
+    val data: RecommendationData?
+)
+
+data class RecommendationData(
+    val search_query: String,
+    val recipes: List<Recipe>
+)
+
+data class Recipe(
+    val label: String,
+    val image: String,
+    val sourceUrl: String,
+    val calories: Int,
+    val totalWeight: Double, // Tambahan
+    val time: Int,
+    val cuisineType: List<String>?, // Tambahan
+    val mealType: List<String>?,    // Tambahan
+    val ingredients: List<String>?,
+    val nutrients: MacroNutrients
+)
+
+data class MacroNutrients(
+    val carbs: Int,
+    val protein: Int,
+    val fat: Int
+)
+
+data class MealRequest(
+    val foodName: String,
+    val calories: Int,
+    val carbs: Int,
+    val protein: Int,
+    val fat: Int,
+    val imageUrl: String?
+)

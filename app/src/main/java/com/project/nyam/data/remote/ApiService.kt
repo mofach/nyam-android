@@ -8,10 +8,12 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import com.project.nyam.data.model.PhysicalDataRequest
 import com.project.nyam.data.model.PhysicalDataResponse
+import com.project.nyam.data.model.RecommendationResponse
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Header
 import retrofit2.http.GET
+import com.project.nyam.data.model.MealRequest
 
 interface ApiService {
     @POST("api/auth/google")
@@ -35,4 +37,17 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("uid") uid: String
     ): Response<PhysicalDataResponse>
+
+    @GET("api/search/recommendations")
+    suspend fun getSmartRecommendations(
+        @Header("Authorization") token: String
+    ): Response<RecommendationResponse>
+
+    @POST("api/tracker/meals")
+    suspend fun logMeal(
+        @Header("Authorization") token: String,
+        @Body request: MealRequest
+    ): Response<HistoryResponse>
+
+
 }
