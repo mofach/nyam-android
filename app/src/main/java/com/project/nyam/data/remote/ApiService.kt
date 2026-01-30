@@ -17,6 +17,12 @@ import retrofit2.http.GET
 import com.project.nyam.data.model.MealRequest
 import com.project.nyam.data.model.ChatResponse
 import com.project.nyam.data.model.ChatRequest
+import okhttp3.MultipartBody
+import retrofit2.http.Multipart
+import retrofit2.http.Part
+import retrofit2.http.Query
+import com.project.nyam.data.model.SearchResponse
+import com.project.nyam.data.model.PredictResponse
 
 interface ApiService {
     @POST("api/auth/google")
@@ -63,4 +69,16 @@ interface ApiService {
         @Body request: ChatRequest
     ): Response<ChatResponse>
 
+    @GET("api/search/query")
+    suspend fun searchByText(
+        @Header("Authorization") token: String,
+        @Query("q") query: String
+    ): Response<SearchResponse>
+
+    @Multipart
+    @POST("api/predict/food")
+    suspend fun predictFood(
+        @Header("Authorization") token: String,
+        @Part file: MultipartBody.Part
+    ): Response<PredictResponse>
 }

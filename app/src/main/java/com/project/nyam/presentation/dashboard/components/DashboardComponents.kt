@@ -462,6 +462,12 @@ fun RecipeDetailSheet(
                         sourceUrl = recipe.sourceUrl // TERKIRIM KE BE
                     )
                     onCookMeal(mealReq)
+                    android.widget.Toast.makeText(
+                        context,
+                        "Yummy! ${recipe.label} has been added to your history.",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                    onDismiss()
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(12.dp),
