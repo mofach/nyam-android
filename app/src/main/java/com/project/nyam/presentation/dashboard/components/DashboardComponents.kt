@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.project.nyam.data.model.NutritionSummary
 import com.project.nyam.data.model.NutritionalNeeds
 import com.project.nyam.data.model.MealRequest
+import com .project.nyam.data.model.Meal
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
@@ -34,7 +35,9 @@ import androidx.compose.foundation.layout.Arrangement
 import com.project.nyam.data.model.Recipe
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.filled.RestaurantMenu
-
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.ZoneId
 
 @Composable
 fun NutritionRing(label: String, current: Int, target: Int, color: Color, onClick: () -> Unit) {
@@ -335,22 +338,21 @@ fun RecommendationItem(recipe: Recipe, onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecipeDetailSheet(recipe: Recipe,
-                      onCookMeal: (MealRequest) -> Unit,
-                      onDismiss: () -> Unit) {
-    val context = LocalContext.current // Untuk buka URL
+fun RecipeDetailSheet(
+    recipe: Recipe,
+    onCookMeal: (MealRequest) -> Unit,
+    onDismiss: () -> Unit,
+    mealTime: String? = null
+) {
+    val context = LocalContext.current
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = Color.White
-    ) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color.White) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Gambar dengan Chip cuisine di atasnya
             Box {
                 AsyncImage(
                     model = recipe.image,
@@ -358,7 +360,7 @@ fun RecipeDetailSheet(recipe: Recipe,
                     modifier = Modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(16.dp)),
                     contentScale = ContentScale.Crop
                 )
-                // Cuisine Type Badge
+                // 1. CUISINE TYPE: Muncul kalau ada (Data Rekomendasi)
                 recipe.cuisineType?.firstOrNull()?.let { cuisine ->
                     Surface(
                         modifier = Modifier.padding(12.dp).align(Alignment.TopStart),
@@ -369,8 +371,7 @@ fun RecipeDetailSheet(recipe: Recipe,
                             cuisine.uppercase(),
                             color = Color.White,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 10.sp, fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -379,40 +380,49 @@ fun RecipeDetailSheet(recipe: Recipe,
             Spacer(Modifier.height(16.dp))
             Text(text = recipe.label, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
 
-            // Info Bar
+            // 2. INFO BAR: Adaptif (Time & Weight muncul kalau > 0)
             Row(
-                Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                Modifier.padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 SmallMacroBadge("${recipe.calories} kkal", Color(0xFF4CAF50))
-                SmallMacroBadge("${recipe.time} Min", Color.Gray)
-                SmallMacroBadge("${recipe.totalWeight.toInt()}g", Color.Blue.copy(0.6f))
-            }
 
-            // Meal Type Info
-            Text(
-                text = "Perfect for ${recipe.mealType?.joinToString() ?: "anytime"}",
-                fontSize = 12.sp,
-                color = Color.Gray,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-            )
+                if (recipe.time > 0) SmallMacroBadge("${recipe.time} Min", Color.Gray)
+                if (recipe.totalWeight > 0) SmallMacroBadge("${recipe.totalWeight.toInt()}g", Color.Blue.copy(0.6f))
 
-            Spacer(Modifier.height(16.dp))
-            HorizontalDivider(thickness = 0.5.dp)
-            Spacer(Modifier.height(16.dp))
-
-            Text(text = "Ingredients", fontWeight = FontWeight.Bold, color = Color.DarkGray)
-            Spacer(Modifier.height(8.dp))
-            recipe.ingredients?.forEach { item ->
-                Row(Modifier.padding(vertical = 4.dp)) {
-                    Text(text = "•", modifier = Modifier.padding(end = 8.dp), color = Color(0xFF4CAF50))
-                    Text(text = item, fontSize = 14.sp, color = Color.Gray)
+                if (!mealTime.isNullOrBlank()) {
+                    Icon(Icons.Default.Schedule, null, modifier = Modifier.size(16.dp), tint = Color.Gray)
+                    Text(text = formatMealTime(mealTime), color = Color.Gray, fontSize = 14.sp)
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            // 3. MEAL TYPE: Muncul kalau ada (Data Rekomendasi)
+            recipe.mealType?.let { types ->
+                Text(
+                    text = "Perfect for ${types.joinToString()}",
+                    fontSize = 12.sp, color = Color.Gray,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+                Spacer(Modifier.height(16.dp))
+            }
 
-            // Nutrition Section
+            // 4. INGREDIENTS: Muncul kalau ada (Data Rekomendasi)
+            if (!recipe.ingredients.isNullOrEmpty()) {
+                HorizontalDivider(thickness = 0.5.dp)
+                Spacer(Modifier.height(16.dp))
+                Text(text = "Ingredients", fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                Spacer(Modifier.height(8.dp))
+                recipe.ingredients.forEach { item ->
+                    Row(Modifier.padding(vertical = 4.dp)) {
+                        Text(text = "•", modifier = Modifier.padding(end = 8.dp), color = Color(0xFF4CAF50))
+                        Text(text = item, fontSize = 14.sp, color = Color.Gray)
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            // 5. NUTRITION: Pasti muncul (Dua-duanya ada)
             Text(text = "Nutritional Info", fontWeight = FontWeight.Bold, color = Color.DarkGray)
             Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 NutrientDetail("Carbs", "${recipe.nutrients.carbs}g", Color(0xFFFFA726))
@@ -422,22 +432,24 @@ fun RecipeDetailSheet(recipe: Recipe,
 
             Spacer(Modifier.height(32.dp))
 
-            // ACTION BUTTON: Buka Browser
-            Button(
-                onClick = {
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(recipe.sourceUrl))
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-            ) {
-                Icon(Icons.Default.OpenInNew, null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Lihat Instruksi Memasak", fontWeight = FontWeight.Bold)
+            // BUTTONS
+            if (!recipe.sourceUrl.isNullOrBlank()) {
+                Button(
+                    onClick = {
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(recipe.sourceUrl))
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                ) {
+                    Icon(Icons.Default.OpenInNew, null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Lihat Instruksi Memasak", fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.height(12.dp))
             }
-            Spacer(Modifier.height(12.dp))
-            // TOMBOL BARU: MASAK & MAKAN
+
             OutlinedButton(
                 onClick = {
                     val mealReq = MealRequest(
@@ -446,7 +458,8 @@ fun RecipeDetailSheet(recipe: Recipe,
                         carbs = recipe.nutrients.carbs,
                         protein = recipe.nutrients.protein,
                         fat = recipe.nutrients.fat,
-                        imageUrl = recipe.image
+                        imageUrl = recipe.image,
+                        sourceUrl = recipe.sourceUrl // TERKIRIM KE BE
                     )
                     onCookMeal(mealReq)
                 },
@@ -459,7 +472,6 @@ fun RecipeDetailSheet(recipe: Recipe,
                 Spacer(Modifier.width(8.dp))
                 Text("Masak & Makan Sekarang", fontWeight = FontWeight.Bold)
             }
-
             Spacer(Modifier.height(40.dp))
         }
     }
@@ -470,5 +482,90 @@ fun NutrientDetail(label: String, value: String, color: Color) {
     Column {
         Text(text = label, fontSize = 12.sp, color = Color.Gray)
         Text(text = value, fontWeight = FontWeight.Bold, color = color)
+    }
+}
+
+// Tambahkan di DashboardComponents.kt
+@Composable
+fun HistoryMealItem(meal: Meal) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(1.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = meal.imageUrl ?: Icons.Default.Fastfood,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = meal.foodName,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Kalori
+                    Text(
+                        text = "${meal.calories} kkal",
+                        color = Color(0xFF4CAF50),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    // Meal Time (Jam Makan)
+                    Icon(
+                        Icons.Default.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = Color.Gray
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = formatMealTime(meal.mealTime) ?: "-",
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text("C: ${meal.carbs}g", fontSize = 10.sp, color = Color(0xFFFFA726))
+                Text("P: ${meal.protein}g", fontSize = 10.sp, color = Color(0xFF42A5F5))
+                Text("F: ${meal.fat}g", fontSize = 10.sp, color = Color(0xFFEF5350))
+            }
+        }
+    }
+}
+
+fun formatMealTime(rawTime: String?): String {
+    if (rawTime.isNullOrBlank()) return "-"
+    return try {
+        // Parse format "2026-01-30T01:56:25.363Z"
+        val utcTime = ZonedDateTime.parse(rawTime)
+        // Konversi ke zona waktu sistem HP (WIB jika di Indonesia)
+        val localTime = utcTime.withZoneSameInstant(ZoneId.systemDefault())
+        // Format jadi HH:mm saja
+        localTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+    } catch (e: Exception) {
+        // Fallback jika parse gagal, ambil potongan jam di tengah
+        if (rawTime.contains("T")) {
+            rawTime.substringAfter("T").take(5)
+        } else "-"
     }
 }

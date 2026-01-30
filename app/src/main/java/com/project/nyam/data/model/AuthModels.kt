@@ -103,12 +103,14 @@ data class NutritionSummary(
 )
 
 data class Meal(
+    val mealTime: String?,
     val foodName: String,
     val calories: Int,
     val carbs: Int,
     val protein: Int,
     val fat: Int,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val sourceUrl: String?
 )
 
 data class BottomNavItem(
@@ -153,5 +155,6 @@ data class MealRequest(
     val carbs: Int,
     val protein: Int,
     val fat: Int,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val sourceUrl: String?
 )
