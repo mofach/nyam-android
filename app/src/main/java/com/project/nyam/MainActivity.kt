@@ -1,5 +1,6 @@
 package com.project.nyam
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,13 +10,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Cek status login di Firebase
         val currentUser = FirebaseAuth.getInstance().currentUser
 
+        // Cek apakah user pernah melewati onboarding sebelumnya (disimpan secara permanen di SP)
+        val sharedPref = getSharedPreferences("nyam_prefs", Context.MODE_PRIVATE)
+        val hasSeenOnboarding = sharedPref.getBoolean("has_seen_onboarding", false)
+
         setContent {
-            // Jika user sudah login, startDestination langsung ke "home"
-            // Jika belum, mulai dari "onboarding"
-            val startScreen = if (currentUser != null) "home" else "onboarding"
+            val startScreen = when {
+                currentUser != null -> "home"
+                !hasSeenOnboarding -> "onboarding"
+                else -> "login" // Jika sudah pernah onboarding tapi belum login
+            }
 
             NyamApp(startDestination = startScreen)
         }

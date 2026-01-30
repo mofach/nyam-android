@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -45,23 +46,57 @@ fun DashboardScreen(
         bottomBar = { BottomNavBar(currentRoute = currentTab, onNavigate = { currentTab = it }) },
         topBar = {
             TopAppBar(
+                // Di dalam TopAppBar DashboardScreen.kt
                 title = {
-                    Column {
-                        Text("$greeting, ${userData.name}", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Text("Sudah makan apa hari ini?", fontSize = 12.sp, color = Color.Gray)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNavigateToProfile) {
-                        AsyncImage(
-                            model = userData.photoUrl ?: Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            modifier = Modifier.size(36.dp).clip(CircleShape),
-                            contentScale = ContentScale.Crop
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
+                            .fillMaxWidth()
+                    ) {
+                        // Logika ambil nama depan jika terlalu panjang, atau biarkan wrap
+                        val displayName = userData.name.split(" ").firstOrNull() ?: userData.name
+
+                        Text(
+                            text = "$greeting, $displayName", // Pakai nama depan agar elegan
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 22.sp, // Memberi ruang jika wrap
+                            color = Color.Black
+                        )
+                        Text(
+                            text = "Sudah makan apa hari ini?",
+                            fontSize = 12.sp,
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Normal
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                actions = {
+                    // Foto Profil dengan Fallback Icon
+                    IconButton(
+                        onClick = onNavigateToProfile,
+                        modifier = Modifier.padding(end = 12.dp).size(44.dp)
+                    ) {
+                        if (!userData.photoUrl.isNullOrEmpty()) {
+                            AsyncImage(
+                                model = userData.photoUrl,
+                                contentDescription = "Profile",
+                                modifier = Modifier.size(38.dp).clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            // Placeholder Icon jika URL null
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = "Profile",
+                                modifier = Modifier.size(38.dp),
+                                tint = Color(0xFF4CAF50)
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
+                modifier = Modifier.shadow(2.dp) // Kasih sedikit depth agar tidak flat
             )
         }
     ) { padding ->
