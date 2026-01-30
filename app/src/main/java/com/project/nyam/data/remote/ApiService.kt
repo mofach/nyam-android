@@ -15,6 +15,8 @@ import retrofit2.http.Path
 import retrofit2.http.Header
 import retrofit2.http.GET
 import com.project.nyam.data.model.MealRequest
+import com.project.nyam.data.model.ChatResponse
+import com.project.nyam.data.model.ChatRequest
 
 interface ApiService {
     @POST("api/auth/google")
@@ -54,5 +56,11 @@ interface ApiService {
     suspend fun getNews(
         @Header("Authorization") token: String
     ): Response<NewsResponse>
+
+    @POST("api/chat")
+    suspend fun sendMessage(
+        @Header("Authorization") token: String,
+        @Body request: ChatRequest
+    ): Response<ChatResponse>
 
 }

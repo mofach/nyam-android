@@ -201,6 +201,7 @@ fun NyamApp(startDestination: String = "onboarding") {
                                 }
                             },
                             newsList = newsList,
+                            onGetToken = {authManager.getIdToken()},
                             onRefresh = { onFinished -> loadData(onFinished) },
                         )
                     } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

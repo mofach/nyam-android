@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.project.nyam.data.model.*
 import com.project.nyam.presentation.dashboard.components.*
+import com.project.nyam.presentation.dashboard.tabs.ChatTab
 import java.util.Calendar
 import com.project.nyam.presentation.dashboard.tabs.HomeTab
 import com.project.nyam.presentation.dashboard.tabs.HistoryTab
@@ -29,6 +30,7 @@ fun DashboardScreen(
     historyData: HistoryData?,
     recommendations: List<Recipe>,
     newsList: List<NewsItem>,
+    onGetToken: suspend () -> String?,
     onNavigateToProfile: () -> Unit,
     onUpdateTdee: (Double) -> Unit,
     onCookMeal: (MealRequest) -> Unit,
@@ -130,6 +132,11 @@ fun DashboardScreen(
                 "news" -> {
                     NewsTab(newsList = newsList,
                             onRefresh = onRefresh)
+                }
+                // DashboardScreen.kt
+                "chat" -> {
+                    // Oper fungsi tokennya ke ChatTab
+                    ChatTab(getToken = onGetToken)
                 }
                 // Tab news, scan, dan chat bisa menyusul
                 else -> {
