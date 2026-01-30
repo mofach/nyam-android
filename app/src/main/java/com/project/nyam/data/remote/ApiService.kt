@@ -9,6 +9,7 @@ import retrofit2.http.POST
 import com.project.nyam.data.model.PhysicalDataRequest
 import com.project.nyam.data.model.PhysicalDataResponse
 import com.project.nyam.data.model.RecommendationResponse
+import com.project.nyam.data.model.NewsResponse
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Header
@@ -49,5 +50,9 @@ interface ApiService {
         @Body request: MealRequest
     ): Response<HistoryResponse>
 
+    @GET("api/news")
+    suspend fun getNews(
+        @Header("Authorization") token: String
+    ): Response<NewsResponse>
 
 }

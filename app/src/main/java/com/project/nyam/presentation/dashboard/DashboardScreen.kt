@@ -20,6 +20,7 @@ import com.project.nyam.presentation.dashboard.components.*
 import java.util.Calendar
 import com.project.nyam.presentation.dashboard.tabs.HomeTab
 import com.project.nyam.presentation.dashboard.tabs.HistoryTab
+import com.project.nyam.presentation.dashboard.tabs.NewsTab
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +28,7 @@ fun DashboardScreen(
     userData: FullUserProfile,
     historyData: HistoryData?,
     recommendations: List<Recipe>,
+    newsList: List<NewsItem>,
     onNavigateToProfile: () -> Unit,
     onUpdateTdee: (Double) -> Unit,
     onCookMeal: (MealRequest) -> Unit,
@@ -124,6 +126,10 @@ fun DashboardScreen(
                         onRefresh = onRefresh,
                         onCookMeal = onCookMeal
                     )
+                }
+                "news" -> {
+                    NewsTab(newsList = newsList,
+                            onRefresh = onRefresh)
                 }
                 // Tab news, scan, dan chat bisa menyusul
                 else -> {

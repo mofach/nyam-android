@@ -1,5 +1,6 @@
 package com.project.nyam
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -8,6 +9,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.*
+import com.google.firebase.auth.FirebaseAuth
 import com.project.nyam.data.SessionManager
 import com.project.nyam.data.model.*
 import com.project.nyam.data.remote.ApiClient
@@ -33,8 +35,9 @@ fun NyamApp(startDestination: String = "onboarding") {
     var recommendations by remember { mutableStateOf<List<Recipe>>(emptyList()) }
     var isLoadingData by remember { mutableStateOf(true) }
     var tempUid by remember {
-        mutableStateOf(com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "")
+        mutableStateOf(FirebaseAuth.getInstance().currentUser?.uid ?: "")
     }
+    var newsList by remember { mutableStateOf<List<NewsItem>>(emptyList()) }
 
     // --- FUNGSI LOAD DATA ---
     val loadData: (((Boolean) -> Unit)?) -> Unit = { onFinished ->
@@ -51,12 +54,16 @@ fun NyamApp(startDestination: String = "onboarding") {
                         if (hRes.isSuccessful) historyData = hRes.body()?.data
                         if (rRes.isSuccessful) recommendations =
                             rRes.body()?.data?.recipes ?: emptyList()
+                        val nRes = ApiClient.instance.getNews("Bearer $token")
+                        if (nRes.isSuccessful) {
+                            newsList = nRes.body()?.data ?: emptyList()
+                        }
                     } else if (pRes.code() == 404 || pRes.code() == 401) {
                         // Jika akun dihapus, navigasi dulu baru clear
                         navController.navigate("login") {
                             popUpTo(0) { inclusive = true }
                         }
-                        com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                        FirebaseAuth.getInstance().signOut()
                         sessionManager.clearSession()
                         fullProfile = null
                     }
@@ -69,12 +76,13 @@ fun NyamApp(startDestination: String = "onboarding") {
             }
         }
     }
+
         NavHost(navController = navController, startDestination = startDestination) {
 
             composable("onboarding") {
                 OnboardingScreen {
                     // Simpan status bahwa user sudah melihat onboarding selamanya
-                    val sharedPref = context.getSharedPreferences("nyam_prefs", android.content.Context.MODE_PRIVATE)
+                    val sharedPref = context.getSharedPreferences("nyam_prefs", Context.MODE_PRIVATE)
                     sharedPref.edit().putBoolean("has_seen_onboarding", true).apply()
 
                     navController.navigate("login") { popUpTo("onboarding") { inclusive = true } }
@@ -192,7 +200,8 @@ fun NyamApp(startDestination: String = "onboarding") {
                                     ) loadData(null)
                                 }
                             },
-                            onRefresh = { onFinished -> loadData(onFinished) }
+                            newsList = newsList,
+                            onRefresh = { onFinished -> loadData(onFinished) },
                         )
                     } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("Menyiapkan dashboard...")
@@ -212,7 +221,7 @@ fun NyamApp(startDestination: String = "onboarding") {
                         }
 
                         scope.launch {
-                            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                            FirebaseAuth.getInstance().signOut()
                             fullProfile = null
                             historyData = null
                             recommendations = emptyList()
