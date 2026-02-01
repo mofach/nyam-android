@@ -16,6 +16,7 @@ import com.project.nyam.data.remote.ApiClient
 import com.project.nyam.presentation.auth.*
 import com.project.nyam.presentation.dashboard.DashboardScreen
 import com.project.nyam.presentation.onboarding.*
+import com.project.nyam.presentation.profile.AboutScreen
 import com.project.nyam.presentation.profile.ProfileScreen
 import com.project.nyam.presentation.profile.EditProfileScreen
 import kotlinx.coroutines.flow.first
@@ -215,6 +216,7 @@ fun NyamApp(startDestination: String = "onboarding") {
                     userData = fullProfile,
                     onBack = { navController.popBackStack() },
                     onNavigateToEdit = { navController.navigate("edit_profile") },
+                    onNavigateToAbout = { navController.navigate("about_app") },
                     onLogout = {
                         // PINDAH LAYAR DULU BIAR GA CRASH
                         navController.navigate("login") {
@@ -256,6 +258,11 @@ fun NyamApp(startDestination: String = "onboarding") {
                             }
                         }
                     }
+                )
+            }
+            composable("about_app") {
+                AboutScreen(
+                    onBack = { navController.popBackStack() }
                 )
             }
         }

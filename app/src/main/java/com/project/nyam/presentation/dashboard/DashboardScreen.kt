@@ -129,49 +129,72 @@ fun DashboardScreen(
                         title = {
                             Column(
                                 modifier = Modifier
-                                    .padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
-                                    .fillMaxWidth()
+                                    .padding(start = 4.dp) // Spacing yang lebih proporsional
                             ) {
                                 val displayName = userData.name.split(" ").firstOrNull() ?: userData.name
+
+                                // Greeting dengan warna yang lebih deep
                                 Text(
-                                    text = "$greeting, $displayName",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    lineHeight = 22.sp,
-                                    color = Color.Black
+                                    text = "$greeting, $displayName!",
+                                    fontSize = 20.sp, // Ukuran sedikit dinaikkan agar dominan
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF2D3436), // Dark charcoal agar tidak kaku
+                                    letterSpacing = (-0.5).sp // Sedikit rapat agar modern
                                 )
-                                Text(
-                                    text = "Sudah makan apa hari ini?",
-                                    fontSize = 12.sp,
-                                    color = Color.Gray,
-                                    fontWeight = FontWeight.Normal
-                                )
+
+                                // Sub-title dengan aksen hijau tipis
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.WavingHand, // Memberi kesan ramah
+                                        contentDescription = null,
+                                        modifier = Modifier.size(12.dp),
+                                        tint = Color(0xFF4CAF50)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        text = "Sudah makan apa hari ini?",
+                                        fontSize = 13.sp,
+                                        color = Color.Gray,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                             }
                         },
                         actions = {
-                            IconButton(
-                                onClick = onNavigateToProfile,
-                                modifier = Modifier.padding(end = 12.dp).size(44.dp)
+                            // Container Profile dengan Border halus
+                            Surface(
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .size(42.dp)
+                                    .clip(CircleShape)
+                                    .clickable { onNavigateToProfile() },
+                                color = Color(0xFFF1F8E9), // Background soft green jika foto loading
+                                border = BorderStroke(2.dp, Color(0xFF4CAF50).copy(alpha = 0.2f)) // Ring estetik
                             ) {
                                 if (!userData.photoUrl.isNullOrEmpty()) {
                                     AsyncImage(
                                         model = userData.photoUrl,
                                         contentDescription = "Profile",
-                                        modifier = Modifier.size(38.dp).clip(CircleShape),
+                                        modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
                                     )
                                 } else {
-                                    Icon(
-                                        imageVector = Icons.Default.AccountCircle,
-                                        contentDescription = "Profile",
-                                        modifier = Modifier.size(38.dp),
-                                        tint = Color(0xFF4CAF50)
-                                    )
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.Person,
+                                            contentDescription = "Profile",
+                                            modifier = Modifier.size(24.dp),
+                                            tint = Color(0xFF4CAF50)
+                                        )
+                                    }
                                 }
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
-                        modifier = Modifier.shadow(2.dp)
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.White
+                        ),
+                        // Menggunakan modifier bawaan tanpa shadow berat agar terlihat clean (flat design)
+                        windowInsets = WindowInsets.statusBars
                     )
                 }
             ) { padding ->

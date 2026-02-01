@@ -37,13 +37,13 @@ fun PhysicalDataScreen(uid: String, onComplete: () -> Unit) {
     val HijauNyam = Color(0xFF4CAF50)
     val BackgroundSoft = Color(0xFFF8F9FA)
 
-    // --- STATE FORM ---
+    // --- STATE FORM (Logika Asli) ---
     var name by remember { mutableStateOf("") }
     var height by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var birthdate by remember { mutableStateOf("1998-05-20") }
     var gender by remember { mutableStateOf(0) }
-    var isLoading by remember { mutableStateOf(false) } // State Loading
+    var isLoading by remember { mutableStateOf(false) }
 
     val activityOptions = listOf(
         "Sedentary (Kantoran)" to 1.2,
@@ -82,32 +82,47 @@ fun PhysicalDataScreen(uid: String, onComplete: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(BackgroundSoft)
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 24.dp) // Sedikit lebih lebar agar lega
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-            Text("Lengkapi Profil", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF2D3436))
-            Text("Bantu kami menghitung kebutuhan gizimu", fontSize = 14.sp, color = Color.Gray)
+            // HEADER (Style Touchup)
+            Text(
+                text = "Lengkapi Profil",
+                fontSize = 30.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.Black
+            )
+            Text(
+                text = "Bantu kami menghitung kebutuhan gizimu",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // CARD INFORMASI DASAR
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(24.dp), // Konsisten 24.dp
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text("Informasi Dasar", fontWeight = FontWeight.Bold, color = HijauNyam)
-                    Spacer(modifier = Modifier.height(12.dp))
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Person, null, tint = HijauNyam, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Informasi Dasar", fontWeight = FontWeight.ExtraBold, color = HijauNyam)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = name, onValueChange = { name = it },
                         label = { Text("Nama Lengkap") },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        leadingIcon = { Icon(Icons.Default.Person, null, tint = HijauNyam) }
+                        shape = RoundedCornerShape(16.dp), // Konsisten 16.dp
+                        leadingIcon = { Icon(Icons.Default.Person, null, tint = HijauNyam) },
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = HijauNyam, focusedLabelColor = HijauNyam)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
@@ -115,19 +130,20 @@ fun PhysicalDataScreen(uid: String, onComplete: () -> Unit) {
                         label = { Text("Tanggal Lahir") },
                         readOnly = true,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         trailingIcon = {
                             IconButton(onClick = { datePickerDialog.show() }) {
                                 Icon(Icons.Default.CalendarMonth, null, tint = HijauNyam)
                             }
-                        }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = HijauNyam)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Jenis Kelamin", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                    Text("Jenis Kelamin", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = gender == 0, onClick = { gender = 0 }, colors = RadioButtonDefaults.colors(selectedColor = HijauNyam))
                         Text("Laki-laki")
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(24.dp))
                         RadioButton(selected = gender == 1, onClick = { gender = 1 }, colors = RadioButtonDefaults.colors(selectedColor = HijauNyam))
                         Text("Perempuan")
                     }
@@ -139,38 +155,46 @@ fun PhysicalDataScreen(uid: String, onComplete: () -> Unit) {
             // CARD METRIK TUBUH
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text("Metrik Tubuh", fontWeight = FontWeight.Bold, color = HijauNyam)
-                    Spacer(modifier = Modifier.height(12.dp))
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Scale, null, tint = HijauNyam, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Metrik Tubuh", fontWeight = FontWeight.ExtraBold, color = HijauNyam)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                     Row(Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = height, onValueChange = { if(it.all { c -> c.isDigit() }) height = it },
                             label = { Text("Tinggi (cm)") },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            shape = RoundedCornerShape(16.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = HijauNyam)
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
                         OutlinedTextField(
                             value = weight, onValueChange = { if(it.all { c -> c.isDigit() }) weight = it },
                             label = { Text("Berat (kg)") },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            shape = RoundedCornerShape(16.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = HijauNyam)
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
-                    Text("Tingkat Aktivitas", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                    Text("Tingkat Aktivitas", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                         OutlinedTextField(
                             value = selectedActivityText, onValueChange = {},
                             readOnly = true,
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = HijauNyam)
                         )
                         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             activityOptions.forEach { (label, value) ->
@@ -190,12 +214,17 @@ fun PhysicalDataScreen(uid: String, onComplete: () -> Unit) {
             // CARD ALERGI
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text("Alergi Makanan", fontWeight = FontWeight.Bold, color = HijauNyam)
-                    Spacer(modifier = Modifier.height(12.dp))
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.WarningAmber, null, tint = HijauNyam, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Alergi Makanan", fontWeight = FontWeight.ExtraBold, color = HijauNyam)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                     FlowRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         allergyOptions.forEach { allergy ->
                             FilterChip(
@@ -204,23 +233,27 @@ fun PhysicalDataScreen(uid: String, onComplete: () -> Unit) {
                                     if (selectedAllergies.contains(allergy)) selectedAllergies.remove(allergy)
                                     else selectedAllergies.add(allergy)
                                 },
-                                label = { Text(allergy) }
+                                label = { Text(allergy) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = HijauNyam.copy(alpha = 0.1f),
+                                    selectedLabelColor = HijauNyam
+                                )
                             )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
-            // TOMBOL SIMPAN DENGAN TRY-CATCH
+            // TOMBOL SIMPAN (Logika Asli)
             Button(
                 onClick = {
                     if (name.isEmpty() || height.isEmpty() || weight.isEmpty()) {
                         Toast.makeText(context, "Lengkapi data dulu ya!", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
-                    isLoading = true // Mulai loading
+                    isLoading = true
                     scope.launch {
                         try {
                             val token = authManager.getIdToken()
@@ -234,9 +267,7 @@ fun PhysicalDataScreen(uid: String, onComplete: () -> Unit) {
                                     activityLevel = selectedActivityValue,
                                     allergies = selectedAllergies.toList()
                                 )
-
                                 val response = ApiClient.instance.updateProfile("Bearer $token", uid, request)
-
                                 if (response.isSuccessful) {
                                     val resData = response.body()?.data
                                     Toast.makeText(context, "Berhasil! Status: ${resData?.healthStats?.bmiStatus}", Toast.LENGTH_LONG).show()
@@ -245,39 +276,39 @@ fun PhysicalDataScreen(uid: String, onComplete: () -> Unit) {
                                     Toast.makeText(context, "Gagal: ${response.code()}", Toast.LENGTH_SHORT).show()
                                 }
                             }
-                        } catch (e: java.net.SocketTimeoutException) {
-                            Toast.makeText(context, "Server sedang bersiap (Cold Start), coba sekali lagi ya", Toast.LENGTH_LONG).show()
                         } catch (e: Exception) {
                             Toast.makeText(context, "Gagal terhubung ke server", Toast.LENGTH_SHORT).show()
-                            Log.e("API_ERROR", "Error: ", e)
                         } finally {
-                            isLoading = false // Berhenti loading
+                            isLoading = false
                         }
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                enabled = !isLoading, // Matikan tombol saat loading
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = HijauNyam),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                else Text("Simpan Profil", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                else Text("Simpan & Hitung Gizi", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
         }
 
-        // LOADING OVERLAY (Opsional agar lebih jelas)
+        // LOADING OVERLAY
         if (isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)),
                 contentAlignment = Alignment.Center
             ) {
-                Card(shape = RoundedCornerShape(16.dp)) {
-                    Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = HijauNyam)
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = HijauNyam, strokeWidth = 4.dp)
                         Spacer(Modifier.height(16.dp))
-                        Text("Sedang Menghitung Gizi...")
+                        Text("Sedang Menghitung Gizi...", fontWeight = FontWeight.Bold)
                     }
                 }
             }

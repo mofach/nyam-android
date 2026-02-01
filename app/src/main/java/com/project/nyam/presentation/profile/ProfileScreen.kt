@@ -26,6 +26,7 @@ fun ProfileScreen(
     userData: FullUserProfile?,
     onBack: () -> Unit,
     onNavigateToEdit: () -> Unit,
+    onNavigateToAbout: () -> Unit, // Parameter navigasi baru untuk About App
     onLogout: () -> Unit
 ) {
     Scaffold(
@@ -63,7 +64,6 @@ fun ProfileScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Surface(shape = CircleShape, border = BorderStroke(4.dp, Color.White), shadowElevation = 12.dp) {
-                        // LOGIKA FALLBACK GAMBAR
                         if (!userData?.photoUrl.isNullOrEmpty()) {
                             AsyncImage(
                                 model = userData?.photoUrl,
@@ -178,11 +178,28 @@ fun ProfileScreen(
                     Text("Ubah Profil & Data Fisik", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
 
+                Spacer(Modifier.height(12.dp))
+
+                // Tombol Tentang Aplikasi
+                OutlinedButton(
+                    onClick = onNavigateToAbout,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Color(0xFF4CAF50)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF4CAF50))
+                ) {
+                    Icon(Icons.Default.Info, null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Text("Tentang Aplikasi", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+
                 TextButton(
                     onClick = onLogout,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = 12.dp),
                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFE53935))
                 ) {
                     Icon(Icons.Default.Logout, null, modifier = Modifier.size(18.dp))

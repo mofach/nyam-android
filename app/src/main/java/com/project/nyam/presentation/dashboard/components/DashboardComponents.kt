@@ -132,7 +132,7 @@ fun MacroInfoSheet(label: String, onDismiss: () -> Unit) {
         "Karbo" -> Color(0xFFFFA726)
         "Protein" -> Color(0xFF42A5F5)
         "Total Kalori" -> Color(0xFF4CAF50)
-        else -> Color(0xFFEF5350)
+        else -> Color(0xFFEF5350) // Lemak
     }
 
     val content = when(label) {
@@ -142,50 +142,129 @@ fun MacroInfoSheet(label: String, onDismiss: () -> Unit) {
         else -> MacroData.lemak
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color.White) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Color.White,
+        tonalElevation = 8.dp
+    ) {
         Column(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.85f).padding(horizontal = 24.dp).verticalScroll(rememberScrollState()),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, "Close") }
             }
-            Surface(Modifier.size(80.dp), shape = CircleShape, color = color.copy(alpha = 0.1f)) {
+
+            // Icon Header dengan Lingkaran Soft
+            Surface(
+                modifier = Modifier.size(90.dp),
+                shape = CircleShape,
+                color = color.copy(alpha = 0.1f)
+            ) {
                 val icon = when(label) {
                     "Karbo" -> Icons.Default.RiceBowl
                     "Protein" -> Icons.Default.EggAlt
                     "Total Kalori" -> Icons.Default.LocalFireDepartment
                     else -> Icons.Default.Opacity
                 }
-                Icon(icon, null, tint = color, modifier = Modifier.padding(20.dp))
+                Icon(
+                    icon,
+                    null,
+                    tint = color,
+                    modifier = Modifier.padding(24.dp)
+                )
             }
+
             Spacer(Modifier.height(16.dp))
-            Text(label, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = color)
-            Spacer(Modifier.height(24.dp))
+            Text(
+                text = label,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = color
+            )
+
+            Spacer(Modifier.height(32.dp))
+
+            // Detail Info Sections
             InfoSection("Apa itu $label?", content.deskripsi)
-            InfoSection("Kontribusi dalam Tubuh", content.kontribusi)
-            InfoSection("Contoh Sumber Makanan", content.contoh)
-            InfoSection("Insight NYAM", content.insight)
-            Spacer(Modifier.height(40.dp))
+            InfoSection("Mengapa Tubuh Membutuhkannya?", content.kontribusi)
+            InfoSection("Sumber Makanan Sehat", content.contoh)
+
+            // Highlight Box untuk Insight NYAM
+            Card(
+                colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.05f)),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            ) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.TipsAndUpdates, null, tint = color, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text("Tips Cerdas NYAM", fontWeight = FontWeight.Bold, color = color, fontSize = 14.sp)
+                        Text(content.insight, fontSize = 13.sp, color = Color.DarkGray, lineHeight = 18.sp)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(48.dp))
         }
     }
 }
 
 @Composable
 fun InfoSection(title: String, body: String) {
-    Column(Modifier.fillMaxWidth().padding(bottom = 20.dp)) {
-        Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.DarkGray)
+    Column(Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+        Text(
+            text = title,
+            fontWeight = FontWeight.Bold,
+            fontSize = 17.sp,
+            color = Color(0xFF2D3436)
+        )
         Spacer(Modifier.height(8.dp))
-        Text(body, fontSize = 14.sp, color = Color.Gray, lineHeight = 20.sp)
+        Text(
+            text = body,
+            fontSize = 14.sp,
+            color = Color(0xFF636E72),
+            lineHeight = 22.sp,
+            textAlign = TextAlign.Justify
+        )
     }
 }
 
 object MacroData {
     data class MacroInfo(val deskripsi: String, val kontribusi: String, val contoh: String, val insight: String)
-    val karbo = MacroInfo("Karbohidrat adalah sumber energi utama.", "Diubah menjadi glukosa untuk bahan bakar sel.", "Nasi merah, ubi, gandum.", "Pilih karbo kompleks.")
-    val protein = MacroInfo("Membangun jaringan tubuh.", "Membantu hormon dan imun.", "Dada ayam, telur, tempe.", "Jaga otot Anda.")
-    val lemak = MacroInfo("Cadangan energi tubuh.", "Membantu serap vitamin A,D,E,K.", "Alpukat, zaitun.", "Fokus lemak tak jenuh.")
-    val kalori = MacroInfo("Satuan energi dari makanan.", "Bahan bakar fungsi dasar tubuh.", "Karbo (4), Protein (4), Lemak (9).", "Keseimbangan adalah kunci.")
+
+    val karbo = MacroInfo(
+        deskripsi = "Karbohidrat adalah sumber energi tercepat bagi tubuh. Setelah dikonsumsi, tubuh memecahnya menjadi glukosa (gula darah) yang menjadi bahan bakar utama bagi otak dan otot saat beraktivitas.",
+        kontribusi = "Mendukung fungsi sistem saraf pusat, mencegah protein digunakan sebagai sumber energi utama (muscle sparing), dan membantu metabolisme lemak agar lebih efisien.",
+        contoh = "Karbohidrat Kompleks: Nasi merah, ubi jalar, oatmeal, jagung, dan gandum utuh. Karbohidrat Sederhana: Buah-buahan dan madu.",
+        insight = "Utamakan karbohidrat kompleks karena kaya akan serat yang membuat Anda kenyang lebih lama dan menjaga gula darah tetap stabil."
+    )
+
+    val protein = MacroInfo(
+        deskripsi = "Protein sering disebut sebagai 'blok bangunan' kehidupan. Terdiri dari asam amino, protein bertanggung jawab untuk membangun dan memperbaiki hampir semua jaringan di tubuh Anda.",
+        kontribusi = "Berperan dalam pembentukan otot, regenerasi sel kulit yang rusak, produksi enzim, hormon, dan menjaga sistem kekebalan tubuh agar tetap kuat melawan penyakit.",
+        contoh = "Protein Hewani: Dada ayam, ikan, telur, daging sapi tanpa lemak. Protein Nabati: Tempe, tahu, edamame, dan kacang-kacangan.",
+        insight = "Konsumsi protein yang cukup sangat penting saat Anda sedang dalam program penurunan berat badan untuk menjaga massa otot tetap padat."
+    )
+
+    val lemak = MacroInfo(
+        deskripsi = "Jangan takut dengan lemak! Lemak sehat adalah sumber energi padat yang melindungi organ tubuh dan sangat penting untuk penyerapan vitamin yang larut dalam lemak (A, D, E, dan K).",
+        kontribusi = "Membantu produksi sel, melindungi saraf, menjaga suhu tubuh, serta memberikan rasa gurih dan rasa kenyang yang tahan lama pada makanan.",
+        contoh = "Lemak Tak Jenuh: Alpukat, kacang almond, minyak zaitun (olive oil), dan ikan berlemak seperti salmon.",
+        insight = "Hindari lemak trans dan batasi lemak jenuh. Fokus pada lemak tak jenuh yang membantu menjaga kesehatan jantung dan otak Anda."
+    )
+
+    val kalori = MacroInfo(
+        deskripsi = "Kalori adalah satuan energi yang didapatkan dari makanan dan minuman. Tubuh membutuhkan jumlah kalori tertentu setiap harinya hanya untuk menjalankan fungsi dasar seperti bernapas dan detak jantung.",
+        kontribusi = "Menyediakan tenaga untuk bergerak, berpikir, dan menjaga suhu tubuh tetap stabil. Jika asupan kalori seimbang dengan aktivitas, berat badan Anda akan terjaga.",
+        contoh = "Kalori berasal dari tiga sumber utama: 1g Karbohidrat (4 kkal), 1g Protein (4 kkal), dan 1g Lemak (9 kkal).",
+        insight = "Keseimbangan kalori adalah kunci. Gunakan fitur Scan Food di NYAM untuk memastikan setiap kalori yang masuk memberikan nutrisi berkualitas bagi tubuh."
+    )
 }
 
 @Composable
